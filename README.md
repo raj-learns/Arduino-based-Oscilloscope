@@ -62,7 +62,7 @@ To replicate this project, you will need:
 
 ## Presentation
 
-For a detailed explanation of the project, including the circuit diagram, working principle, and demonstration, refer to the provided PDF presentation: [PG4_2022CEB1026.pdf](PG4_2022CEB1026.pdf)
+For a detailed explanation of the project, including the circuit diagram, working principle, and demonstration, refer to the provided PDF presentation: [PG4_2022CEB1026.pdf](PG4_2022CEB1026.pdf.pdf-Copy.pdf)
 
 ## Future Enhancements
 
