@@ -1,0 +1,108 @@
+#include <Adafruit_GFX.h>
+#include <Adafruit_PCD8544.h>
+#include <SPI.h>
+
+#define DISPLAY_WIDTH 84
+#define DISPLAY_HEIGHT 48
+
+#define ARDUINO_PRECISION 1023.0
+
+const float sineFrequency = 1000; // Frequency of sine wave in Hz
+const float sawtoothFrequency = 500; // Frequency of sawtooth wave in Hz
+const float squareFrequency = 250; // Frequency of square wave in Hz
+const int amplitude = 127; // Amplitude of the waves (0-255)
+
+// Create an instance of the library
+Adafruit_PCD8544 display = Adafruit_PCD8544(9, 10, 11, 12, 13);
+ 
+
+//Analog Pins
+int channelAI = A0;      // probe
+
+#define DELAY_POTENTIMETER //disabled it I don't have it connected
+#ifdef DELAY_POTENTIMETER
+int delayAI = A1;       // delay potentiometer
+#endif
+
+float delayVariable = 0;
+float scale = 0;
+int xCounter = 0;
+int yPosition = 0;
+int readings[DISPLAY_WIDTH+1];
+int counter = 0;
+
+unsigned long drawtime = 0;
+unsigned long lastdraw = 0;
+int frames = 0;
+
+void setup(void) 
+{
+  display.begin();
+  display.setContrast(50);// you might have a slightly different display so it might not be the optimal value for you
+  display.clearDisplay();
+  pinMode(A3, OUTPUT);
+  pinMode(A4, OUTPUT);
+  pinMode(A5, OUTPUT);
+}
+
+void loop() 
+{  
+  
+  #ifdef DELAY_POTENTIMETER
+  delayVariable = analogRead(delayAI);
+  delayVariable = (delayVariable/100);
+  #endif
+  scale = (float)(DISPLAY_HEIGHT-1)/ARDUINO_PRECISION; 
+  
+  //record readings
+  for(xCounter = 0; xCounter <= DISPLAY_WIDTH; xCounter++)
+  {                                 
+    yPosition = analogRead(channelAI);
+    readings[xCounter] = (yPosition*scale);
+    #ifdef DELAY_POTENTIMETER
+    delay (delayVariable);
+    #endif
+  }
+  
+  display.clearDisplay();
+
+  //Draw Voltage Ref Lines
+  display.drawLine( 10, 0, 10, DISPLAY_HEIGHT-1, BLACK);
+  display.drawLine( 5, (DISPLAY_HEIGHT-1)-(.2 *ARDUINO_PRECISION * scale), 10, (DISPLAY_HEIGHT-1)-(.2 *ARDUINO_PRECISION * scale), BLACK);
+  display.drawLine( 0, (DISPLAY_HEIGHT-1)-(.4 *ARDUINO_PRECISION * scale), 10, (DISPLAY_HEIGHT-1)-(.4 *ARDUINO_PRECISION * scale), BLACK);
+  display.drawLine( 5, (DISPLAY_HEIGHT-1)-(.6 *ARDUINO_PRECISION * scale), 10, (DISPLAY_HEIGHT-1)-(.6 *ARDUINO_PRECISION * scale), BLACK);
+  display.drawLine( 0, (DISPLAY_HEIGHT-1)-(.8 *ARDUINO_PRECISION * scale), 10, (DISPLAY_HEIGHT-1)-(.8 *ARDUINO_PRECISION * scale), BLACK);
+  //display.drawLine( 5, (DISPLAY_HEIGHT-1)-(.84 *ARDUINO_PRECISION * scale), 10, (DISPLAY_HEIGHT-1)-(.84 *ARDUINO_PRECISION * scale), BLACK);
+  
+  //Draw Voltage Ref Numbers
+  display.setCursor(0,((DISPLAY_HEIGHT-1)-(.2 *ARDUINO_PRECISION * scale))-3);
+  display.print((int)(5.0*0.2));
+  display.setCursor(0,((DISPLAY_HEIGHT-1)-(.4 *ARDUINO_PRECISION * scale))-3);
+  display.print((int)(5.0*0.4));
+  display.setCursor(0,((DISPLAY_HEIGHT-1)-(.6 *ARDUINO_PRECISION * scale))-3);
+  display.print((int)(5.0*0.6));
+  display.setCursor(0,((DISPLAY_HEIGHT-1)-(.8 *ARDUINO_PRECISION * scale))-3);
+  display.print((int)(5.0*0.8));
+  
+  for(xCounter = 0; xCounter <= DISPLAY_WIDTH; xCounter++)
+  {
+    display.drawPixel(xCounter, (DISPLAY_HEIGHT-1)-readings[xCounter], BLACK);
+    if(xCounter>1){
+      display.drawLine(xCounter-1, (DISPLAY_HEIGHT-1)-readings[xCounter-1], xCounter, (DISPLAY_HEIGHT-1)-readings[xCounter], BLACK);
+    }
+  }
+  //Draw FPS
+  display.setCursor((DISPLAY_WIDTH-1)-11,0);
+  display.print(frames);
+  
+  //Draw Voltage
+  display.setCursor(((DISPLAY_WIDTH-1)/2),0);
+  display.print(analogRead(channelAI)/ARDUINO_PRECISION*5.0);
+  
+  display.display();
+  
+  //Calculate FPS
+  drawtime = micros();
+  frames=1000000/a second//(drawtime-lastdraw);
+  lastdraw = drawtime;
+}
